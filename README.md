@@ -1,4 +1,8 @@
 /*
+
+ onChange call happens when the field changes again, so we ignore the outdated response and let the newer call handle the new assignee.
+ if (g_form.getValue(fieldName) !== newValue) {
+
 Some Crucial Tips!
 - if Scoped use  global.AbstractAjaxProcessor
 - if Global use AbstractAjaxProcessor
