@@ -1,0 +1,2 @@
+# servicenow_scriptincludesampleBETTER
+servicenow_scriptincludesampleBETTER
