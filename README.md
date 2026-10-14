@@ -1,3 +1,13 @@
+/* *  a  GlideAjax implementation that:
+1. client script onchange on incident form will trigger when assigned_to changes
+2. a server-side script include will check for the assignee with >10 incidents ( however this should be handled dynamically for best practices)
+3.	If so, display an info message warning the user about the assignee's workload
+4.	Show the actual count in the message
+
+*/
+
+
+
 # servicenow_scriptincludesampleBETTER
 servicenow_scriptincludesampleBETTER
 
