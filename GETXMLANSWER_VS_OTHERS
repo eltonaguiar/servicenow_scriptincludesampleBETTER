@@ -1,0 +1,98 @@
+**Three ways to get the answer with GlideAjax** (client → Script Include).
+
+### 1. `getXML(callback)` — Asynchronous (full XML response)
+Callback receives the entire XML response. You must extract the answer yourself.
+
+```javascript
+// Client Script
+function onChange(control, oldValue, newValue, isLoading) {
+    if (isLoading || !newValue) return;
+
+    var ga = new GlideAjax('MyUtils');
+    ga.addParam('sysparm_name', 'getSomething');
+    ga.addParam('sysparm_user', newValue);
+
+    ga.getXML(function(response) {
+        var answer = response.responseXML.documentElement.getAttribute('answer');
+        g_form.setValue('u_result', answer);
+        // Any code that needs the answer MUST live inside this callback
+    });
+
+    // Code here runs immediately (before the server replies)
+}
+```
+
+### 2. `getXMLAnswer(callback)` — Asynchronous (answer string only) ★ Preferred
+Callback receives the `<answer>` value directly as a string. Cleaner and slightly more efficient when you only need the returned value.
+
+```javascript
+// Client Script
+function onChange(control, oldValue, newValue, isLoading) {
+    if (isLoading || !newValue) return;
+
+    var ga = new GlideAjax('MyUtils');
+    ga.addParam('sysparm_name', 'getSomething');
+    ga.addParam('sysparm_user', newValue);
+
+    ga.getXMLAnswer(function(answer) {
+        g_form.setValue('u_result', answer);
+        // Code that needs the answer goes here
+    });
+
+    // Code here runs immediately
+}
+```
+
+### 3. `getXMLWait()` + `getAnswer()` — Synchronous (blocks the UI)
+Freezes the browser until the server responds. Then `getAnswer()` returns the string.  
+**Avoid in normal UI scripts** (causes “form hangs” complaints). Not available in scoped applications.
+
+```javascript
+// Client Script (use sparingly — e.g. critical onSubmit validation)
+function onSubmit() {
+    var ga = new GlideAjax('MyUtils');
+    ga.addParam('sysparm_name', 'validateSomething');
+    ga.addParam('sysparm_value', g_form.getValue('some_field'));
+
+    ga.getXMLWait();                    // blocks here until response arrives
+    var answer = ga.getAnswer();        // synchronous read of the answer
+
+    if (answer !== 'true') {
+        g_form.addErrorMessage('Validation failed');
+        return false;
+    }
+    return true;
+}
+```
+
+### Quick comparison
+
+| Method                  | Sync/Async | Callback receives          | Extract answer yourself? | Recommendation          |
+|-------------------------|------------|----------------------------|--------------------------|-------------------------|
+| `getXML(callback)`      | Async      | Full XML response          | Yes                      | Use when you need more than the answer |
+| `getXMLAnswer(callback)`| Async      | Answer string only         | No                       | **Preferred** for most cases |
+| `getXMLWait()` + `getAnswer()` | Sync | (none — returns via `getAnswer()`) | No                 | Avoid (blocks UI)      |
+
+### Server-side Script Include (same for all three)
+
+```javascript
+var MyUtils = Class.create();
+MyUtils.prototype = Object.extendsObject(AbstractAjaxProcessor, {
+    getSomething: function() {
+        var userId = this.getParameter('sysparm_user');
+        // ... your logic ...
+        return 'the value you want to return';   // becomes the <answer>
+    },
+
+    validateSomething: function() {
+        // ...
+        return 'true';   // or 'false'
+    },
+
+    type: 'MyUtils'
+});
+```
+
+**Key takeaway:**  
+`getXMLAnswer()` and `getXML()` are both asynchronous — put any code that depends on the result *inside* the callback.  
+`ga.getAnswer()` is only valid *after* a blocking `getXMLWait()` call.
