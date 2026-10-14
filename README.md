@@ -1,3 +1,42 @@
+/*
+Some Crucial Tips!
+- if Scoped use  global.AbstractAjaxProcessor
+- if Global use AbstractAjaxProcessor
+- remember the OnChange function signature
+- function onChange(control, oldValue, newValue, isLoading, isTemplate)
+Argument	Purpose
+control	Field control argument
+oldValue	Previous value
+newValue	New value
+isLoading	Whether the form is loading
+isTemplate	Whether a template is being applied
+Interview rule: Use newValue to process the changed value, and use the loading/template flags to avoid unwanted execution.
+
+getXMLAnswer() is asynchronous, watch out! ga.getAnswer is syncronous.
+
+
+
+*/
+
+/* 
+Other methods:
+Scope adjustment: The code above uses `global.AbstractAjaxProcessor`, appropriate for a scoped application. If `IncidentUtils` is in the global scope, use `AbstractAjaxProcessor` instead. Ensure the client-side GlideAjax name matches the Script Include's actual API name.
+
+## 3. Important implementation notes
+
+- `isTemplate` guard: Included to skip execution during template application.
+- `!newValue`: Handles empty values and other falsy values.
+- `control.name`: Avoids hard-coding `assigned_to` in the stale-response check.
+- `g_form.clearMessages()`: Prevents old form messages from accumulating, but it clears all form messages, not just this warning. If other messages must remain visible, use a more targeted message-management strategy.
+- Invalid response: The server returns `'-1'` for invalid input, and the client ignores negative counts.
+- Open versus active: The query currently counts all incidents with `active = true`. Change the query if your business defines “open” by specific states instead.
+- Security: Client-callable does not mean unrestricted access should be allowed. Apply appropriate authorization if workload counts are sensitive.
+
+One final distinction: this implementation warns the user when the count exceeds 10; it does not prevent the assignment. A hard enforcement requirement needs server-side validation as well.
+
+
+*/
+
 /* *  a  GlideAjax implementation that:
 1. client script onchange on incident form will trigger when assigned_to changes
 2. a server-side script include will check for the assignee with >10 incidents ( however this should be handled dynamically for best practices)
